@@ -140,50 +140,61 @@ namespace pdollar{
 					if (pointer == "MOUSEDOWN"){
 						item++;
 					}
-					else if (!(pointer == "MOUSEUP")){
-
-						if (pointer == "RECOGNIZE"){
-
-							if (!Directory.Exists(Application.StartupPath +
-								"\\Added Gestures\\Gestures")){
-
-								Console.WriteLine("Gestures need to be registered.");
-								Directory.CreateDirectory(Application.StartupPath+
-									"\\Added Gestures\\Gestures");
-							}
-
-							string[] file1 = Directory.GetDirectories(Application.StartupPath +
-								"\\Added Gestures");
-							int stringSize1 = file1.Length;
-
-							for (int j = 0; j < stringSize1; j++){
-
-								string[] readDirectory = Directory.GetFiles(file1[j],"*.xml");
-
-								int stringSize = readDirectory.Length;
-
-								for (int i = 0; i < stringSize; i++){
-									string name = readDirectory[i];
-
-									l2.Add(GestureIO.ReadGesture(name));
-								}
-							}
-							Gesture[] recognizer = l2.ToArray();
-							string str = PointCloudRecognizer.Classify(new Gesture(l1.ToArray(),""), recognizer);
-							Console.WriteLine("RESULT: " + str);
-						}
-
-						else{
-							string[] addFile = pointer.Split(new char[]{','});
-
-							float cord1 = float.Parse(addFile[0], CultureInfo.InvariantCulture.NumberFormat);
-							float cord2 = float.Parse(addFile[1], CultureInfo.InvariantCulture.NumberFormat);
-							Point item2 = new Point(cord1, cord2, item);
-							l1.Add(item2);
-						}
+					else if (!(pointer == "MOUSEUP"))
+					{
+						RecognitionSuccess(l1, l2, item, pointer);
 					}
 				}
 				return;
+			}
+		}
+
+		private static void RecognitionSuccess(List<Point> l1, List<Gesture> l2, int item, string pointer)
+		{
+			if (pointer == "RECOGNIZE")
+			{
+
+				if (!Directory.Exists(Application.StartupPath +
+					"\\Added Gestures\\Gestures"))
+				{
+
+					Console.WriteLine("Gestures need to be registered.");
+					Directory.CreateDirectory(Application.StartupPath +
+						"\\Added Gestures\\Gestures");
+				}
+
+				string[] file1 = Directory.GetDirectories(Application.StartupPath +
+					"\\Added Gestures");
+				int stringSize1 = file1.Length;
+
+				for (int j = 0; j < stringSize1; j++)
+				{
+
+					string[] readDirectory = Directory.GetFiles(file1[j], "*.xml");
+
+					int stringSize = readDirectory.Length;
+
+					for (int i = 0; i < stringSize; i++)
+					{
+						string name = readDirectory[i];
+
+						l2.Add(GestureIO.ReadGesture(name));
+					}
+				}
+				Gesture[] recognizer = l2.ToArray();
+				string str = PointCloudRecognizer.Classify(new Gesture(l1.ToArray(), ""), recognizer);
+				Console.WriteLine("RESULT: " + str);
+			}
+
+			else
+			{
+				string[] addFile = pointer.Split(new char[] { ',' });
+
+				float cord1 = float.Parse(addFile[0], CultureInfo.InvariantCulture.NumberFormat);
+				float cord2 = float.Parse(addFile[1], CultureInfo.InvariantCulture.NumberFormat);
+
+				Point item2 = new Point(cord1, cord2, item);
+				l1.Add(item2);
 			}
 		}
 	}
