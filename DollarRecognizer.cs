@@ -1,4 +1,5 @@
-﻿using System;
+﻿/// Source code reference used from the link: http://depts.washington.edu/acelab/proj/dollar/pdollar.html ///
+using System;
 using System.IO;
 using System.Globalization;
 using System.Windows.Forms;
@@ -75,16 +76,16 @@ namespace pdollar{
 			else{
 				Console.WriteLine();
 
-				Console.WriteLine("	Help");
+				Console.WriteLine("Help Menu");
 				Console.WriteLine();
 
-				Console.WriteLine("	pdollar –t <gesturefile> : Adds the gesture file to the list of templates");
+				Console.WriteLine(">pdollar –t <gesturefile>: Adds the gesture file to the list of templates");
 				Console.WriteLine();
 
-				Console.WriteLine("	pdollar ‐r : Clears the templates");
+				Console.WriteLine(">pdollar ‐r: Clears the templates");
 				Console.WriteLine();
 
-				Console.WriteLine("	pdollar <eventstream> : Prints the name of gestures as they are recognized from the event stream");
+				Console.WriteLine(">pdollar <eventstream>: Prints the name of gestures as they are recognized from the event stream");
 				Console.WriteLine();
 
 				return;
@@ -149,14 +150,12 @@ namespace pdollar{
 			}
 		}
 
-		private static void RecognitionSuccess(List<Point> l1, List<Gesture> l2, int item, string pointer)
-		{
-			if (pointer == "RECOGNIZE")
-			{
+		private static void RecognitionSuccess(List<Point> l1, List<Gesture> l2, int item, string pointer){
+
+			if (pointer == "RECOGNIZE"){
 
 				if (!Directory.Exists(Application.StartupPath +
-					"\\Added Gestures\\Gestures"))
-				{
+					"\\Added Gestures\\Gestures")){
 
 					Console.WriteLine("Gestures need to be registered.");
 					Directory.CreateDirectory(Application.StartupPath +
@@ -167,17 +166,15 @@ namespace pdollar{
 					"\\Added Gestures");
 				int stringSize1 = file1.Length;
 
-				for (int j = 0; j < stringSize1; j++)
-				{
+				for (int j = 0; j < stringSize1; j++){
 
 					string[] readDirectory = Directory.GetFiles(file1[j], "*.xml");
 
 					int stringSize = readDirectory.Length;
 
-					for (int i = 0; i < stringSize; i++)
-					{
-						string name = readDirectory[i];
+					for (int i = 0; i < stringSize; i++){
 
+						string name = readDirectory[i];
 						l2.Add(GestureIO.ReadGesture(name));
 					}
 				}
@@ -185,9 +182,8 @@ namespace pdollar{
 				string str = PointCloudRecognizer.Classify(new Gesture(l1.ToArray(), ""), recognizer);
 				Console.WriteLine("RESULT: " + str);
 			}
+			else{
 
-			else
-			{
 				string[] addFile = pointer.Split(new char[] { ',' });
 
 				float cord1 = float.Parse(addFile[0], CultureInfo.InvariantCulture.NumberFormat);

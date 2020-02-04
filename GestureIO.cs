@@ -1,88 +1,86 @@
-﻿using PDollarGestureRecognizer;
-using System;
-using System.Collections.Generic;
+﻿/// Source code used from the link: http://depts.washington.edu/acelab/proj/dollar/pdollar.html ///
+
 using System.IO;
+using System.Collections.Generic;
 using System.Xml;
+using PDollarGestureRecognizer;
 
 namespace pdollar
 {
 	public class GestureIO
 	{
-		public static Gesture ReadGesture(string fileName)
+        /// <summary>
+        /// Reads a multistroke gesture from an XML file
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        public static Gesture ReadGesture(string fileName)
+        {
+            List<Point> points = new List<Point>();
+            XmlTextReader xmlReader = null;
+            int currentStrokeIndex = -1;
+            string gestureName1 = "";
+            try
+            {
+                xmlReader = new XmlTextReader(File.OpenText(fileName));
+                while (xmlReader.Read())
+                {
+                    if (xmlReader.NodeType != XmlNodeType.Element) continue;
+                    switch (xmlReader.Name)
+                    {
+                        case "Gesture":
+                            gestureName1 = xmlReader["Name"];
+                            if (gestureName1.Contains("~")) // '~' character is specific to the naming convention of the MMG set
+                                gestureName1 = gestureName1.Substring(0, gestureName1.LastIndexOf('~'));
+                            if (gestureName1.Contains("_")) // '_' character is specific to the naming convention of the MMG set
+                                gestureName1 = gestureName1.Replace('_', ' ');
+                            break;
+                        case "Stroke":
+                            currentStrokeIndex++;
+                            break;
+                        case "Point":
+                            points.Add(new Point(
+                                float.Parse(xmlReader["X"]),
+                                float.Parse(xmlReader["Y"]),
+                                currentStrokeIndex
+                            ));
+                            break;
+                    }
+                }
+            }
+            finally
+            {
+                if (xmlReader != null)
+                    xmlReader.Close();
+            }
+            return new Gesture(points.ToArray(), gestureName1);
+        }
+        /// <summary>
+        /// Writes a multistroke gesture to an XML file
+        /// </summary>
+        public static void WriteGesture(Point[] points, string gestureName, string fileName)
 		{
-			List<Point> list = new List<Point>();
-			XmlTextReader xmlTextReader = null;
-			int num = -1;
-			string text = "";
-			try
+			using (StreamWriter sw = new StreamWriter(fileName))
 			{
-				xmlTextReader = new XmlTextReader(File.OpenText(fileName));
-				while (xmlTextReader.Read())
-				{
-					if (xmlTextReader.NodeType == XmlNodeType.Element)
-					{
-						string name = xmlTextReader.Name;
-						if (!(name == "Gesture"))
-						{
-							if (!(name == "Stroke"))
-							{
-								if (name == "Point")
-								{
-									list.Add(new Point(float.Parse(xmlTextReader["X"]), float.Parse(xmlTextReader["Y"]), num));
-								}
-							}
-							else
-							{
-								num++;
-							}
-						}
-						else
-						{
-							text = xmlTextReader["Name"];
-							if (text.Contains("~"))
-							{
-								text = text.Substring(0, text.LastIndexOf('~'));
-							}
-							if (text.Contains("_"))
-							{
-								text = text.Replace('_', ' ');
-							}
-						}
-					}
-				}
-			}
-			finally
-			{
-				if (xmlTextReader != null)
-				{
-					xmlTextReader.Close();
-				}
-			}
-			return new Gesture(list.ToArray(), text);
-		}
-
-		public static void WriteGesture(Point[] points, string gestureName, string fileName)
-		{
-			using (StreamWriter streamWriter = new StreamWriter(fileName))
-			{
-				streamWriter.WriteLine("<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?>");
-				streamWriter.WriteLine("<Gesture Name = \"{0}\">", gestureName);
-				int num = -1;
+				sw.WriteLine("<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?>");
+				sw.WriteLine("<Gesture Name = \"{0}\">", gestureName);
+				int currentStroke = -1;
 				for (int i = 0; i < points.Length; i++)
 				{
-					if (points[i].StrokeID != num)
+					if (points[i].StrokeID != currentStroke)
 					{
 						if (i > 0)
 						{
-							streamWriter.WriteLine("\t</Stroke>");
+							sw.WriteLine("\t</Stroke>");
 						}
-						streamWriter.WriteLine("\t<Stroke>");
-						num = points[i].StrokeID;
+						sw.WriteLine("\t<Stroke>");
+                        currentStroke = points[i].StrokeID;
 					}
-					streamWriter.WriteLine("\t\t<Point X = \"{0}\" Y = \"{1}\" T = \"0\" Pressure = \"0\" />", points[i].X, points[i].Y);
+					sw.WriteLine("\t\t<Point X = \"{0}\" Y = \"{1}\" T = \"0\" Pressure = \"0\" />", 
+                        points[i].X, points[i].Y);
 				}
-				streamWriter.WriteLine("\t</Stroke>");
-				streamWriter.WriteLine("</Gesture>");
+				sw.WriteLine("\t</Stroke>");
+				sw.WriteLine("</Gesture>");
 			}
 		}
 	}
